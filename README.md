@@ -1,8 +1,5 @@
-![Darknet Logo](http://pjreddie.com/media/files/darknet-black-small.png)
+# Darknet-on-ARM
 
-#Darknet#
-Darknet is an open source neural network framework written in C and CUDA. It is fast, easy to install, and supports CPU and GPU computation.
+An incomplete port of Darknet (and YOLO) to the Qualcomm® Snapdragon™ 820 processor using the Symphony System Manager SDK to better utilize the multicore CPU, GPU and DSP inside said processor.
 
-For more information see the [Darknet project website](http://pjreddie.com/darknet).
-
-For questions or issues please use the [Google Group](https://groups.google.com/forum/#!forum/darknet).
+This is a fork of Joseph Redmon *et al.* work on Darknet and the You only look once (YOLO) real-time object detection system. 
