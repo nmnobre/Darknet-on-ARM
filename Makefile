@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS  = -Wall -Ofast
+CFLAGS  = -Wall -Wfatal-errors -Ofast
 LDFLAGS = -lm -pthread
 TARGET_x86_64 = darknet_x86_64
 
