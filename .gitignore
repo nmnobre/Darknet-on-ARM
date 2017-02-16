@@ -1,2 +1,4 @@
 pre-trained/
-darknet
+SymphonyLibs/
+darknet_arm
+darknet_x86_64
