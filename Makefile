@@ -1,32 +1,50 @@
+# x86_64 (local) compilation set-up
 CC = gcc
 CFLAGS  = -Wall -Wfatal-errors -Ofast
 LDFLAGS = -lm -pthread
-TARGET_x86_64 = darknet_x86_64
+EXEC_x86_64 = darknet_x86_64
 
+# ARMv7-A (cross) compilation (partial) set-up to be complemented by jni/Android.mk and jni/Application.mk
+# Set APP_ABI to the ABI tailored for the ARMv7-A architecture (as defined in jni/Application.mk)
 NDK_BUILD = $(ANDROID_NDK)/ndk-build
-TARGET_ARM = darknet_arm
+APP_ABI = armeabi-v7a
+EXEC_ARM = darknet_arm
+
+# Source code files (excluding CUDA kernels for now)
+SOURCE = $(wildcard src/*.c)
+
+# The defaults directories for intermediate (obj/) and final (libs/) binaries used by ndk-build
+NDK_OBJ_DIR = obj
+NDK_LIBS_DIR = libs
+
+# Remote (i.e. on the device) directories for the Symphony dynamic libraries and for darknet
+REMOTE_LIBS_DIR = /system/vendor/lib
 REMOTE_DIR = /data/local/tmp/darknet-on-arm
 
-SOURCE = $(wildcard src/*.c)
-SYMPHONY_LIBS_DIR = SymphonyLibs
+# Local directory for the required Symphony dynamic libraries
+LOCAL_LIBS_DIR = symphonyLibs
 
 .PHONY: all
-all: $(TARGET_x86_64) $(TARGET_ARM)
+all: $(EXEC_x86_64) $(EXEC_ARM)
+	mkdir -p $(LOCAL_LIBS_DIR)
+	mv ./$(NDK_LIBS_DIR)/$(APP_ABI)/$(EXEC_ARM) .
+	mv ./$(NDK_LIBS_DIR)/$(APP_ABI)/*.so $(LOCAL_LIBS_DIR)
+	rm -rf $(NDK_LIBS_DIR) $(NDK_OBJ_DIR)
 
-$(TARGET_x86_64): $(SOURCE)
-	$(CC) $(CFLAGS) -o $(TARGET_x86_64) $(SOURCE) $(LDFLAGS)
+$(EXEC_x86_64): $(SOURCE)
+	$(CC) $(CFLAGS) -o $(EXEC_x86_64) $(SOURCE) $(LDFLAGS)
 
-$(TARGET_ARM): $(SOURCE)
+$(EXEC_ARM): $(SOURCE)
 	$(NDK_BUILD)
-	cp ./libs/armeabi-v7a/$(TARGET_ARM) .
-	mkdir -p $(SYMPHONY_LIBS_DIR)
-	cp ./libs/armeabi-v7a/*.so $(SYMPHONY_LIBS_DIR)
-	$(RM) -r libs/ obj/
 
 .PHONY: install
-install: $(TARGET_ARM)
+install: $(EXEC_ARM)
+	adb remount
+	
 	adb shell "mkdir -p $(REMOTE_DIR)"
-	adb push $(TARGET_ARM) $(REMOTE_DIR)
+	adb push $(EXEC_ARM) $(REMOTE_DIR)
+
+	adb push $(LOCAL_LIBS_DIR) $(REMOTE_LIBS_DIR)
 
 	adb shell "mkdir -p $(REMOTE_DIR)/cfg"
 	adb shell "mkdir -p $(REMOTE_DIR)/data"
@@ -37,5 +55,5 @@ install: $(TARGET_ARM)
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET_x86_64) $(TARGET_ARM) predictions.*
-	$(RM) -r $(SYMPHONY_LIBS_DIR) libs/ obj/
+	rm -f $(EXEC_x86_64) $(EXEC_ARM) *.png
+	rm -rf $(NDK_LIBS_DIR) $(NDK_OBJ_DIR) $(LOCAL_LIBS_DIR)
