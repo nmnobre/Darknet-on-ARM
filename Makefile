@@ -1,82 +1,47 @@
-GPU=0
-CUDNN=0
-OPENCV=0
-DEBUG=0
+CC = gcc
+CFLAGS  = -Wall -Ofast
+LDFLAGS = -lm -pthread
+TARGET_x86_64 = darknet_x86_64
 
-ARCH= -gencode arch=compute_20,code=[sm_20,sm_21] \
-      -gencode arch=compute_30,code=sm_30 \
-      -gencode arch=compute_35,code=sm_35 \
-      -gencode arch=compute_50,code=[sm_50,compute_50] \
-      -gencode arch=compute_52,code=[sm_52,compute_52]
+NDK_BUILD = $(ANDROID_NDK)/ndk-build
+TARGET_ARM = darknet_arm
+REMOTE_DIR = /data/local/tmp/darknet_ARM
 
-# This is what I use, uncomment if you know your arch and want to specify
-# ARCH=  -gencode arch=compute_52,code=compute_52
+SOURCE = $(wildcard src/*.c)
+SYMPHONY_LIBS_DIR = SymphonyLibs
 
-VPATH=./src/
-EXEC=darknet
-OBJDIR=./obj/
+.PHONY: all
+all: $(TARGET_x86_64) $(TARGET_ARM)
 
-CC=gcc
-NVCC=nvcc 
-OPTS=-Ofast
-LDFLAGS= -lm -pthread 
-COMMON= 
-CFLAGS=-Wall -Wfatal-errors 
+$(TARGET_x86_64): $(SOURCE)
+	$(CC) $(CFLAGS) -o $(TARGET_x86_64) $(SOURCE) $(LDFLAGS)
 
-ifeq ($(DEBUG), 1) 
-OPTS=-O0 -g
-endif
+$(TARGET_ARM): $(SOURCE)
+	$(NDK_BUILD)
+	cp ./libs/armeabi-v7a/$(TARGET_ARM) .
+	mkdir -p $(SYMPHONY_LIBS_DIR)
+	cp ./libs/armeabi-v7a/*.so $(SYMPHONY_LIBS_DIR)
+	$(RM) -r libs/ obj/
 
-CFLAGS+=$(OPTS)
+.PHONY: install
+install: $(TARGET_ARM)
+	adb shell "mkdir -p $(REMOTE_DIR)"
+	adb push $(TARGET_ARM) $(REMOTE_DIR)
 
-ifeq ($(OPENCV), 1) 
-COMMON+= -DOPENCV
-CFLAGS+= -DOPENCV
-LDFLAGS+= `pkg-config --libs opencv` 
-COMMON+= `pkg-config --cflags opencv` 
-endif
-
-ifeq ($(GPU), 1) 
-COMMON+= -DGPU -I/usr/local/cuda/include/
-CFLAGS+= -DGPU
-LDFLAGS+= -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -lcurand
-endif
-
-ifeq ($(CUDNN), 1) 
-COMMON+= -DCUDNN 
-CFLAGS+= -DCUDNN
-LDFLAGS+= -lcudnn
-endif
-
-OBJ=gemm.o utils.o cuda.o convolutional_layer.o list.o image.o activations.o im2col.o col2im.o blas.o crop_layer.o dropout_layer.o maxpool_layer.o softmax_layer.o data.o matrix.o network.o connected_layer.o cost_layer.o parser.o option_list.o darknet.o detection_layer.o captcha.o route_layer.o writing.o box.o nightmare.o normalization_layer.o avgpool_layer.o coco.o dice.o yolo.o detector.o layer.o compare.o classifier.o local_layer.o swag.o shortcut_layer.o activation_layer.o rnn_layer.o gru_layer.o rnn.o rnn_vid.o crnn_layer.o demo.o tag.o cifar.o go.o batchnorm_layer.o art.o region_layer.o reorg_layer.o super.o voxel.o tree.o
-ifeq ($(GPU), 1) 
-LDFLAGS+= -lstdc++ 
-OBJ+=convolutional_kernels.o activation_kernels.o im2col_kernels.o col2im_kernels.o blas_kernels.o crop_layer_kernels.o dropout_layer_kernels.o maxpool_layer_kernels.o network_kernels.o avgpool_layer_kernels.o
-endif
-
-OBJS = $(addprefix $(OBJDIR), $(OBJ))
-DEPS = $(wildcard src/*.h) Makefile
-
-all: obj backup results $(EXEC)
-
-$(EXEC): $(OBJS)
-	$(CC) $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-
-$(OBJDIR)%.o: %.c $(DEPS)
-	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
-
-$(OBJDIR)%.o: %.cu $(DEPS)
-	$(NVCC) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)" -c $< -o $@
-
-obj:
-	mkdir -p obj
-backup:
-	mkdir -p backup
-results:
-	mkdir -p results
+	adb shell "mkdir -p $(REMOTE_DIR)/cfg"
+	adb shell "mkdir -p $(REMOTE_DIR)/data"
+	adb shell "mkdir -p $(REMOTE_DIR)/pre-trained"
+	if [ -z "$(shell adb shell "ls $(REMOTE_DIR)/cfg         | grep yolo.cfg")" ];     then adb push cfg $(REMOTE_DIR)/cfg;                 fi
+	if [ -z "$(shell adb shell "ls $(REMOTE_DIR)/data        | grep dog.jpg")" ];      then adb push data $(REMOTE_DIR)/data;               fi
+	if [ -z "$(shell adb shell "ls $(REMOTE_DIR)/pre-trained | grep yolo.weights")" ]; then adb push pre-trained $(REMOTE_DIR)/pre-trained; fi
 
 .PHONY: clean
-
 clean:
-	rm -rf $(OBJS) $(EXEC)
-
+	$(RM) $(TARGET_x86_64) $(TARGET_ARM) predictions.*
+	$(RM) -r $(SYMPHONY_LIBS_DIR) libs/ obj/
+	
+# A phony target is simply a target that is always out-of-date,
+# so whenever you ask make <phony_target>, it will run, 
+# independent from the state of the file system. Some common 
+# make targets that are often phony are: all, install, clean,
+# distclean, TAGS, info, check.
