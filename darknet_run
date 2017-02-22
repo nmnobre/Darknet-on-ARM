@@ -9,7 +9,8 @@ EXEC_ITER=3
 
 # The default executable is darknet_arm and assumes that you are root (run 'adb root' prior to 'adb shell'). If the
 # instruction set architecure is detected to be x86-64 then the executable is changed to darknet_x86_64 and the command
-# fetching the CPU frequencies is prefixed with sudo.
+# fetching the CPU frequencies is prefixed with sudo. Evidently, this assumes the executables were already compiled and
+# are available in the current directory.
 EXEC=darknet_arm
 EXEC_ROOT=
 if [ $(uname -m) = "x86_64" ]; then
