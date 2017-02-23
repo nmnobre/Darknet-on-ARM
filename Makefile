@@ -30,15 +30,10 @@ EXEC_SCRIPT=darknet_run
 
 
 .PHONY: all
-all: $(EXEC_x86_64) $(EXEC_ARM)
-
+all: $(EXEC_x86_64) $(EXEC_ARM) $(EXEC_SCRIPT)
 
 $(EXEC_x86_64): $(SOURCE_FILES)
 	$(CC) $(CFLAGS) -o $(EXEC_x86_64) $(SOURCE_FILES) $(LDFLAGS)
-
-	cp $(SOURCE_DIR)/$(EXEC_SCRIPT).sh $(EXEC_SCRIPT)
-	chmod 764 $(EXEC_SCRIPT)
-
 
 $(EXEC_ARM): $(SOURCE_FILES)
 	$(NDK_BUILD)
@@ -47,14 +42,15 @@ $(EXEC_ARM): $(SOURCE_FILES)
 	mv $(NDK_LIBS_DIR)/$(APP_ABI)/*.so $(LOCAL_LIBS_DIR)
 	rm -rf $(NDK_LIBS_DIR) $(NDK_OBJ_DIR)
 
+$(EXEC_SCRIPT): $(SOURCE_DIR)/$(EXEC_SCRIPT).sh
 	cp $(SOURCE_DIR)/$(EXEC_SCRIPT).sh $(EXEC_SCRIPT)
 	chmod 764 $(EXEC_SCRIPT)
-
 
 .PHONY: install
 install: $(EXEC_ARM)	
 	adb shell "mkdir -p $(REMOTE_DIR)"
 	adb push $(EXEC_ARM) $(REMOTE_DIR)
+	adb push $(EXEC_SCRIPT) $(REMOTE_DIR)
 
 	adb shell "mkdir -p $(REMOTE_DIR)/cfg"
 	adb shell "mkdir -p $(REMOTE_DIR)/data"
@@ -71,7 +67,6 @@ install: $(EXEC_ARM)
 	adb remount
 	adb push $(LOCAL_LIBS_DIR) $(REMOTE_LIBS_DIR)
 	adb shell "setprop service.adb.root 0; setprop ctl.restart adbd"
-
 
 .PHONY: clean
 clean:
