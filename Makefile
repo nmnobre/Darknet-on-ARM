@@ -10,8 +10,9 @@ NDK_BUILD = $(ANDROID_NDK)/ndk-build
 APP_ABI = armeabi-v7a
 EXEC_ARM = darknet_arm
 
-# Source code files (excluding CUDA kernels for now).
-SOURCE = $(wildcard src/*.c)
+# Source code directory and files (excluding CUDA kernels for now).
+SOURCE_DIR = src
+SOURCE_FILES = $(wildcard $(SOURCE_DIR)/*.c)
 
 # The defaults directories for intermediate (obj/) and final (libs/) binaries used by ndk-build.
 NDK_OBJ_DIR = obj
@@ -24,18 +25,31 @@ REMOTE_DIR = /data/local/tmp/darknet-on-arm
 # Local directory for the required Symphony dynamic libraries.
 LOCAL_LIBS_DIR = symphonyLibs
 
+# Helper script.
+EXEC_SCRIPT=darknet_run
+
+
 .PHONY: all
 all: $(EXEC_x86_64) $(EXEC_ARM)
 
-$(EXEC_x86_64): $(SOURCE)
-	$(CC) $(CFLAGS) -o $(EXEC_x86_64) $(SOURCE) $(LDFLAGS)
 
-$(EXEC_ARM): $(SOURCE)
+$(EXEC_x86_64): $(SOURCE_FILES)
+	$(CC) $(CFLAGS) -o $(EXEC_x86_64) $(SOURCE_FILES) $(LDFLAGS)
+
+	cp $(SOURCE_DIR)/$(EXEC_SCRIPT).sh $(EXEC_SCRIPT)
+	chmod 764 $(EXEC_SCRIPT)
+
+
+$(EXEC_ARM): $(SOURCE_FILES)
 	$(NDK_BUILD)
 	mkdir -p $(LOCAL_LIBS_DIR)
-	mv ./$(NDK_LIBS_DIR)/$(APP_ABI)/$(EXEC_ARM) .
-	mv ./$(NDK_LIBS_DIR)/$(APP_ABI)/*.so $(LOCAL_LIBS_DIR)
+	mv $(NDK_LIBS_DIR)/$(APP_ABI)/$(EXEC_ARM) .
+	mv $(NDK_LIBS_DIR)/$(APP_ABI)/*.so $(LOCAL_LIBS_DIR)
 	rm -rf $(NDK_LIBS_DIR) $(NDK_OBJ_DIR)
+
+	cp $(SOURCE_DIR)/$(EXEC_SCRIPT).sh $(EXEC_SCRIPT)
+	chmod 764 $(EXEC_SCRIPT)
+
 
 .PHONY: install
 install: $(EXEC_ARM)	
@@ -58,7 +72,8 @@ install: $(EXEC_ARM)
 	adb push $(LOCAL_LIBS_DIR) $(REMOTE_LIBS_DIR)
 	adb shell "setprop service.adb.root 0; setprop ctl.restart adbd"
 
+
 .PHONY: clean
 clean:
-	rm -f $(EXEC_x86_64) $(EXEC_ARM) *.png
+	rm -f $(EXEC_x86_64) $(EXEC_ARM) $(EXEC_SCRIPT) *.png
 	rm -rf $(NDK_LIBS_DIR) $(NDK_OBJ_DIR) $(LOCAL_LIBS_DIR)
