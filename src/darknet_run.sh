@@ -6,7 +6,7 @@ usage() {
 	-h: prints this message
 	-n nexec: total number of darknet executions (default: 1)
 	-o output_file: the name of the file (to be placed in stats/) for darknet's stdout and sterr (default: darknet.out)
-	-v: causes CPU frequencies to be fetched and printed (requires root permissions)
+	-v: causes CPU frequencies to be fetched and printed (root permissions required on android: run '$ adb root' prior to '$ adb shell')
 	-i nfetches: number of times the CPU frequencies are fetched per execution (default: 17)
 	-e prefetches: number of CPU frequency fetches before darknet execution starts (default: 3)\n" $(basename $0) >&2
 }
@@ -57,20 +57,15 @@ done
 
 # These detect the maximum CPU ID available (= maximum number of CPUs - 1), the interval (in seconds) between CPU frequency
 # fetches and set a control flag to prevent multiple execution termination detections.
-CPUS=$(ls /sys/devices/system/cpu/cpu? -d | tail -c 2)
+CPUS=$(cat /proc/cpuinfo | grep "processor" | tail -c 2)
 SLEEP_SEC=2
 TERMINATED=false
 
-# The default executable is darknet_arm and assumes that you are root (run '$ adb root' prior to '$ adb shell'). If the
-# instruction set architecure is detected to be x86-64 then the executable is changed to darknet_x86_64 and the command
-# fetching the CPU frequencies is prefixed with sudo. Evidently, this assumes the executables were already compiled and
-# are available in the current directory.
+# The default executable is darknet_arm. If the instruction set architecure is detected to
+# be x86-64 then the executable is changed to darknet_x86_64. Evidently, this assumes the 
+# executables were already compiled and are available in the current directory.
 EXEC=darknet_arm
-EXEC_ROOT=
-if [ $(uname -m) = "x86_64" ]; then
-	EXEC=darknet_x86_64
-	EXEC_ROOT="sudo -p '[sudo] password for %u is required to fetch CPU frequencies: '"
-fi
+if [ $(uname -m) = "x86_64" ]; then EXEC=darknet_x86_64; fi
 EXEC="./$EXEC detect cfg/yolo.cfg pre-trained/yolo.weights data/dog.jpg"
 
 # The output file's directory.
@@ -99,8 +94,12 @@ do
 		fi
 
 		for k in `seq 0 $CPUS`
-		do
-			eval $EXEC_ROOT cat /sys/devices/system/cpu/cpu$k/cpufreq/cpuinfo_cur_freq | xargs printf "cpu $k: %s\t"
+		do			
+			if [ $(uname -m) = "x86_64" ]; then
+				cat /proc/cpuinfo | grep "MHz" -m $((k+1)) | tail -1 | sed 's/^[^:]*: //g' | xargs printf "cpu $k: %s\t"
+			else
+				cat /sys/devices/system/cpu/cpu$k/cpufreq/cpuinfo_cur_freq | xargs printf "cpu $k: %s\t"
+			fi
 		done
 
 		printf "\n"
