@@ -1,14 +1,14 @@
 # x86_64 (local) compilation set-up.
-CC = gcc
+CC = $$(find $(ANDROID_NDK) -type f -name "clang")
 CFLAGS  = -Wall -Wfatal-errors -Ofast
 LDFLAGS = -lm -pthread
 EXEC_x86_64 = darknet_x86_64
 
-# ARMv7-A (cross) compilation (partial) set-up to be complemented by jni/Android.mk and jni/Application.mk.
-# Set APP_ABI to the ABI tailored for the ARMv7-A architecture (as defined in jni/Application.mk).
+# ARMv8-A (cross) compilation (partial) set-up to be complemented by jni/Android.mk and jni/Application.mk.
+# Set APP_ABI to the ABI tailored for the ARMv8-A architecture (as defined in jni/Application.mk).
 NDK_BUILD = $(ANDROID_NDK)/ndk-build
-APP_ABI = armeabi-v7a
-EXEC_ARM = darknet_arm
+APP_ABI = arm64-v8a
+EXEC_ARM = darknet_aarch64
 
 # Source code directory and files (excluding CUDA kernels for now).
 SOURCE_DIR = src
@@ -19,7 +19,7 @@ NDK_OBJ_DIR = obj
 NDK_LIBS_DIR = libs
 
 # Remote (i.e. on the device) directories for the Symphony dynamic libraries and for darknet.
-REMOTE_LIBS_DIR = /system/vendor/lib
+REMOTE_LIBS_DIR = /system/vendor/lib64
 REMOTE_DIR = /data/local/tmp/darknet-on-arm
 
 # Local directory for the required Symphony dynamic libraries.

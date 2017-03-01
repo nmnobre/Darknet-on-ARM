@@ -61,10 +61,10 @@ CPUS=$(cat /proc/cpuinfo | grep "processor" | tail -c 2)
 SLEEP_SEC=2
 TERMINATED=false
 
-# The default executable is darknet_arm. If the instruction set architecure is detected to
+# The default executable is darknet_aarch64. If the instruction set architecure is detected to
 # be x86-64 then the executable is changed to darknet_x86_64. Evidently, this assumes the 
 # executables were already compiled and are available in the current directory.
-EXEC=darknet_arm
+EXEC=darknet_aarch64
 if [ $(uname -m) = "x86_64" ]; then EXEC=darknet_x86_64; fi
 EXEC="./$EXEC detect cfg/yolo.cfg pre-trained/yolo.weights data/dog.jpg"
 
