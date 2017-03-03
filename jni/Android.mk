@@ -14,7 +14,7 @@ LOCAL_ARM_MODE := arm
 LOCAL_ARM_NEON := true
 LOCAL_MODULE := darknet_aarch64
 LOCAL_CPP_FEATURES := exceptions
-LOCAL_CFLAGS += -Ofast -v
+LOCAL_CFLAGS += -Ofast
 LOCAL_SHARED_LIBRARIES := libsymphony
 LOCAL_SRC_FILES := $(wildcard src/*.c)
 include $(BUILD_EXECUTABLE)
