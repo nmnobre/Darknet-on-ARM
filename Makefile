@@ -25,6 +25,12 @@ REMOTE_DIR = /data/local/tmp/darknet-on-arm
 # Local directory for the required Symphony dynamic libraries.
 LOCAL_LIBS_DIR = symphonyLibs
 
+# Local and remote subdirectories
+CFG_DIR = cfg
+DATA_DIR = data
+WEIGHTS_DIR = pre-trained
+TOOLS_DIR = tools
+
 # Helper script.
 EXEC_SCRIPT=darknet_run
 
@@ -51,13 +57,14 @@ install: $(EXEC_ARM)
 	adb shell "mkdir -p $(REMOTE_DIR)"
 	adb push $(EXEC_ARM) $(REMOTE_DIR)
 	adb push $(EXEC_SCRIPT) $(REMOTE_DIR)
+	adb push $(TOOLS_DIR) $(REMOTE_DIR)/$(TOOLS_DIR)
 
-	adb shell "mkdir -p $(REMOTE_DIR)/cfg"
-	adb shell "mkdir -p $(REMOTE_DIR)/data"
-	adb shell "mkdir -p $(REMOTE_DIR)/pre-trained"
-	if [ -z "$$(adb shell "ls $(REMOTE_DIR)/cfg | grep yolo.cfg")" ]; then adb push cfg $(REMOTE_DIR)/cfg; fi
-	if [ -z "$$(adb shell "ls $(REMOTE_DIR)/data | grep dog.jpg")" ]; then adb push data $(REMOTE_DIR)/data; fi
-	if [ -z "$$(adb shell "ls $(REMOTE_DIR)/pre-trained | grep yolo.weights")" ]; then adb push pre-trained $(REMOTE_DIR)/pre-trained; fi
+	adb shell "mkdir -p $(REMOTE_DIR)/$(CFG_DIR)"
+	adb shell "mkdir -p $(REMOTE_DIR)/$(DATA_DIR)"
+	adb shell "mkdir -p $(REMOTE_DIR)/$(WEIGHTS_DIR)"
+	if [ -z "$$(adb shell "ls $(REMOTE_DIR)/$(CFG_DIR) | grep yolo.cfg")" ]; then adb push cfg $(REMOTE_DIR)/$(CFG_DIR); fi
+	if [ -z "$$(adb shell "ls $(REMOTE_DIR)/$(DATA_DIR) | grep dog.jpg")" ]; then adb push data $(REMOTE_DIR)/$(DATA_DIR); fi
+	if [ -z "$$(adb shell "ls $(REMOTE_DIR)/$(WEIGHTS_DIR) | grep yolo.weights")" ]; then adb push pre-trained $(REMOTE_DIR)/$(WEIGHTS_DIR); fi
 
 	# Upload Symphony libraries requires remounting the /system partition read/write.
 	# In turn, this requires root permissions which are requested (+ brief timeout to

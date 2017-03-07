@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# The help/usage message.
+#### The help/usage message.
 usage() {
 	printf "usage: %s [-h] [-n nexec] [-o output_file] [-v] [-i nfetches] [-e prefetches]
 	-h: prints this message
@@ -69,7 +69,7 @@ if [ $(uname -m) = "x86_64" ]; then EXEC=darknet_x86_64; fi
 EXEC="./$EXEC detect cfg/yolo.cfg pre-trained/yolo.weights data/dog.jpg"
 
 # The output file's directory.
-OUT_DIR=stats
+OUT_DIR=results
 mkdir -p $OUT_DIR
 OUT_FILE=$OUT_DIR/$OUT_FILE
 
