@@ -1,4 +1,4 @@
-![Darknet Logo](http://pjreddie.com/media/files/darknet-black-small.png) <img src="http://www.glitters20.com/quotes/wp-content/uploads/2012/12/Arrow-4.gif" height="256" width="200"> <img src="http://www.qualcomm.cn/sites/regional/files/styles/optimize/public/component-item/flexible-block/chip_0.png?itok=PpoXam0G" height="256">
+![Darknet Logo](http://pjreddie.com/media/files/darknet-black-small.png) <img src="https://cdn3.iconfinder.com/data/icons/google-material-design-icons/48/ic_keyboard_arrow_right_48px-256.png" height="256"> <img src="http://www.qualcomm.cn/sites/regional/files/styles/optimize/public/component-item/flexible-block/chip_0.png?itok=PpoXam0G" height="256">
 
 # darknet on arm
 
