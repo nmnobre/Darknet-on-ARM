@@ -1,3 +1,5 @@
+![Darknet Logo](http://pjreddie.com/media/files/darknet-black-small.png) ![Snapdragon Logo](http://www.qualcomm.cn/sites/regional/files/styles/optimize/public/component-item/flexible-block/chip_0.png?itok=PpoXam0G)
+
 # darknet on arm
 
 An incomplete port of Darknet (and YOLO) to the Qualcomm® Snapdragon™ 820 processor using the Symphony System Manager SDK to better utilize the multicore CPU, GPU and DSP inside said processor.
