@@ -1,4 +1,4 @@
-![Darknet Logo](http://pjreddie.com/media/files/darknet-black-small.png) <img src="https://github.com/favicon.ico" width="237">
+![Darknet Logo](http://pjreddie.com/media/files/darknet-black-small.png) <img src="http://www.qualcomm.cn/sites/regional/files/styles/optimize/public/component-item/flexible-block/chip_0.png?itok=PpoXam0G" width="237">
 
 # darknet on arm
 
