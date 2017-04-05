@@ -1,4 +1,4 @@
-<img src="http://www.cs.man.ac.uk/~nobren/images/darknet-on-arm.png" height="200">
+<img src="http://www.cs.man.ac.uk/~nobren/images/darknet-on-arm-artwork.png" height="200">
 
 # darknet on arm
 
